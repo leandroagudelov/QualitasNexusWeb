@@ -112,6 +112,54 @@ const Layout = ({ children }: ChildContainerProps) => {
         unbindProfileMenuOutsideClickListener();
     });
 
+    // Auto-refresh JWT access token shortly before expiry
+    const refreshTimeoutRef = useRef<number | null>(null);
+
+    const parseCookie = (name: string): string | null => {
+        if (typeof document === 'undefined') return null;
+        const match = document.cookie.match(new RegExp('(^|; )' + name.replace(/([.$?*|{}()\[\]\\/+^])/g, '\\$1') + '=([^;]*)'));
+        return match ? decodeURIComponent(match[2]) : null;
+    };
+
+    const scheduleRefresh = () => {
+        const expIso = parseCookie('access_expires_at');
+        if (!expIso) return;
+        const expMs = new Date(expIso).getTime();
+        const now = Date.now();
+        const safetyMs = 60 * 1000; // refresh 1 minute before expiry
+        const delay = Math.max(0, expMs - now - safetyMs);
+        if (refreshTimeoutRef.current) {
+            clearTimeout(refreshTimeoutRef.current);
+            refreshTimeoutRef.current = null;
+        }
+        refreshTimeoutRef.current = window.setTimeout(async () => {
+            try {
+                const res = await fetch('/api/auth/refresh', { method: 'POST' });
+                if (!res.ok) {
+                    // If refresh fails, redirect to login
+                    router.push('/auth/login');
+                    return;
+                }
+                // Re-schedule based on new cookie values
+                // Allow cookies to set before reading
+                window.setTimeout(scheduleRefresh, 500);
+            } catch {
+                router.push('/auth/login');
+            }
+        }, delay);
+    };
+
+    useEffect(() => {
+        scheduleRefresh();
+        return () => {
+            if (refreshTimeoutRef.current) {
+                clearTimeout(refreshTimeoutRef.current);
+                refreshTimeoutRef.current = null;
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const containerClass = classNames('layout-wrapper', {
         'layout-overlay': layoutConfig.menuMode === 'overlay',
         'layout-static': layoutConfig.menuMode === 'static',

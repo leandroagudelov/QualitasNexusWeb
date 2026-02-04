@@ -1,4 +1,6 @@
 import { Metadata } from 'next';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import Layout from '../../layout/layout';
 
 interface AppLayoutProps {
@@ -24,5 +26,9 @@ export const metadata: Metadata = {
 };
 
 export default function AppLayout({ children }: AppLayoutProps) {
+    const access = cookies().get('access_token')?.value;
+    if (!access) {
+        redirect('/auth/login');
+    }
     return <Layout>{children}</Layout>;
 }

@@ -10,8 +10,12 @@ import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 
 const LoginPage = () => {
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [tenant, setTenant] = useState('root');
     const [checked, setChecked] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const { layoutConfig } = useContext(LayoutContext);
 
     const router = useRouter();
@@ -36,15 +40,50 @@ const LoginPage = () => {
                         </div>
 
                         <div>
-                            <label htmlFor="email1" className="block text-900 text-xl font-medium mb-2">
+                            <label htmlFor="loginEmail" className="block text-900 text-xl font-medium mb-2">
                                 Email
                             </label>
-                            <InputText id="email1" type="text" placeholder="Email address" className="w-full md:w-30rem mb-5" style={{ padding: '1rem' }} />
+                            <InputText
+                                id="loginEmail"
+                                type="email"
+                                placeholder="Email address"
+                                className="w-full md:w-30rem mb-5"
+                                style={{ padding: '1rem' }}
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                disabled={loading}
+                            />
 
-                            <label htmlFor="password1" className="block text-900 font-medium text-xl mb-2">
+                            <label htmlFor="loginPassword" className="block text-900 font-medium text-xl mb-2">
                                 Password
                             </label>
-                            <Password inputId="password1" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" toggleMask className="w-full mb-5" inputClassName="w-full p-3 md:w-30rem"></Password>
+                            <Password
+                                inputId="loginPassword"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Password"
+                                toggleMask
+                                feedback={false}
+                                className="w-full mb-3"
+                                inputClassName="w-full p-3 md:w-30rem"
+                                disabled={loading}
+                            ></Password>
+
+                            {error && <div className="text-red-500 mb-3">{error}</div>}
+
+                            <label htmlFor="loginTenant" className="block text-900 text-xl font-medium mb-2">
+                                Tenant
+                            </label>
+                            <InputText
+                                id="loginTenant"
+                                type="text"
+                                placeholder="Tenant (default: root)"
+                                className="w-full md:w-30rem mb-5"
+                                style={{ padding: '1rem' }}
+                                value={tenant}
+                                onChange={(e) => setTenant(e.target.value)}
+                                disabled={loading}
+                            />
 
                             <div className="flex align-items-center justify-content-between mb-5 gap-5">
                                 <div className="flex align-items-center">
@@ -55,7 +94,39 @@ const LoginPage = () => {
                                     Forgot password?
                                 </a>
                             </div>
-                            <Button label="Sign In" className="w-full p-3 text-xl" onClick={() => router.push('/')}></Button>
+                            <Button
+                                label={loading ? 'Signing In...' : 'Sign In'}
+                                className="w-full p-3 text-xl"
+                                disabled={loading || !email || !password}
+                                onClick={async () => {
+                                    setError(null);
+                                    setLoading(true);
+                                    try {
+                                        const res = await fetch('/api/auth/login', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ email, password, tenant }),
+                                        });
+                                        if (!res.ok) {
+                                            const body = await res.json().catch(() => ({}));
+                                            const errorMessage =
+                                                res.status === 401
+                                                    ? 'Email o contraseña incorrectos'
+                                                    : res.status === 400
+                                                      ? body?.message || 'Datos inválidos'
+                                                      : body?.message || 'Error al iniciar sesión';
+                                            setError(errorMessage);
+                                            return;
+                                        }
+                                        router.push('/');
+                                    } catch (error) {
+                                        const message = error instanceof Error ? error.message : 'Error de red';
+                                        setError(message);
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                            ></Button>
                         </div>
                     </div>
                 </div>
