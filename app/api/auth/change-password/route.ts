@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { parseApiError } from '@/lib/api/profile';
+import { apiConfig } from '@/lib/config/api';
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL || 'http://localhost:5030';
-const DEFAULT_TENANT = process.env.NEXT_PUBLIC_BACKEND_TENANT || 'root';
+const API_BASE = apiConfig.baseUrl;
+const DEFAULT_TENANT = apiConfig.defaultTenant;
 
 /**
  * POST /api/auth/change-password

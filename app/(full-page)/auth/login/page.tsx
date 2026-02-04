@@ -1,13 +1,21 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 import { useRouter } from 'next/navigation';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useRef, useMemo } from 'react';
 import { Checkbox } from 'primereact/checkbox';
 import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
 import { LayoutContext } from '../../../../layout/context/layoutcontext';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
+import { logLoginAttempt, logLoginError } from '@/lib/utils/securityLogger';
+import { setTenant as saveTenant, saveAuthTokens } from '@/lib/utils/apiConfig';
+
+// Validación de email
+const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+};
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
@@ -18,8 +26,16 @@ const LoginPage = () => {
     const [error, setError] = useState<string | null>(null);
     const { layoutConfig } = useContext(LayoutContext);
 
+    // Ref para cancelar requests en vuelo
+    const abortControllerRef = useRef<AbortController | null>(null);
+
     const router = useRouter();
     const containerClassName = classNames('surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden', { 'p-input-filled': layoutConfig.inputStyle === 'filled' });
+
+    // Validación de formulario
+    const isFormValid = useMemo(() => {
+        return isValidEmail(email) && password.length > 0;
+    }, [email, password]);
 
     return (
         <div className={containerClassName}>
@@ -97,15 +113,27 @@ const LoginPage = () => {
                             <Button
                                 label={loading ? 'Signing In...' : 'Sign In'}
                                 className="w-full p-3 text-xl"
-                                disabled={loading || !email || !password}
+                                disabled={loading || !isFormValid}
                                 onClick={async () => {
+                                    // Cancelar request anterior si existe
+                                    if (abortControllerRef.current) {
+                                        abortControllerRef.current.abort();
+                                    }
+
+                                    // Crear nuevo abort controller
+                                    abortControllerRef.current = new AbortController();
+
                                     setError(null);
                                     setLoading(true);
                                     try {
                                         const res = await fetch('/api/auth/login', {
                                             method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ email, password, tenant }),
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'tenant': tenant,  // ← Enviar en header
+                                            },
+                                            body: JSON.stringify({ email, password }),  // ← Remover tenant del body
+                                            signal: abortControllerRef.current.signal,
                                         });
                                         if (!res.ok) {
                                             const body = await res.json().catch(() => ({}));
@@ -116,12 +144,37 @@ const LoginPage = () => {
                                                       ? body?.message || 'Datos inválidos'
                                                       : body?.message || 'Error al iniciar sesión';
                                             setError(errorMessage);
+                                            logLoginAttempt(email, false, errorMessage);
                                             return;
                                         }
+
+                                        // Guardar tenant y tokens
+                                        const data = await res.json();
+                                        saveTenant(tenant);
+                                        saveAuthTokens({
+                                            accessToken: data.accessToken,
+                                            refreshToken: data.refreshToken,
+                                            accessTokenExpiresAt: data.accessTokenExpiresAt,
+                                            refreshTokenExpiresAt: data.refreshTokenExpiresAt,
+                                        });
+
+                                        logLoginAttempt(email, true);
                                         router.push('/');
                                     } catch (error) {
-                                        const message = error instanceof Error ? error.message : 'Error de red';
+                                        // Ignorar errores de abort
+                                        if (error instanceof Error && error.name === 'AbortError') {
+                                            return;
+                                        }
+
+                                        let message = 'Error al conectar con el servidor';
+                                        if (error instanceof TypeError && error.message.includes('fetch')) {
+                                            message = 'No se pudo conectar. Verifica tu conexión a internet';
+                                        } else if (error instanceof Error) {
+                                            message = error.message;
+                                        }
+
                                         setError(message);
+                                        logLoginError(email, message);
                                     } finally {
                                         setLoading(false);
                                     }

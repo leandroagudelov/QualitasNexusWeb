@@ -17,7 +17,7 @@ export interface UpdateProfileRequest {
   lastName: string;
   phoneNumber: string;
   email: string;
-  image?: FileUploadRequest;
+  image?: File | FileUploadRequest;
   deleteCurrentImage: boolean;
 }
 

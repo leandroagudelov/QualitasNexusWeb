@@ -6,9 +6,8 @@ import { Button } from 'primereact/button';
 import { Divider } from 'primereact/divider';
 import { Toast } from 'primereact/toast';
 import { Skeleton } from 'primereact/skeleton';
-import { fileToUploadRequest } from '@/lib/utils/file';
 import { validateProfileForm } from '@/lib/validators/profile';
-import { UpdateProfileRequest, ChangePasswordRequest, FileUploadRequest } from '@/types/profile';
+import { UpdateProfileRequest, ChangePasswordRequest } from '@/types/profile';
 import { useProfile } from '@/hooks/useProfile';
 import { ProfileForm } from '../../components/ProfileForm';
 import { PasswordForm } from '../../components/PasswordForm';
@@ -71,24 +70,16 @@ export default function ProfilePage() {
     }
 
     try {
-      let image: FileUploadRequest | undefined = undefined;
-      if (imageFile) {
-        image = await fileToUploadRequest(imageFile);
-      }
-
       const payload: UpdateProfileRequest = {
         firstName,
         lastName,
         phoneNumber,
         email,
-        image,
+        image: imageFile || undefined,
         deleteCurrentImage,
       };
 
       await updateProfile(payload);
-
-      setImageFile(null);
-      setDeleteCurrentImage(false);
 
       toast.current?.show({
         severity: 'success',
@@ -98,6 +89,10 @@ export default function ProfilePage() {
       });
     } catch (error) {
       // Error is already in profileError state, shown in UI
+    } finally {
+      // Always clear image and delete flag after attempt
+      setImageFile(null);
+      setDeleteCurrentImage(false);
     }
   };
 

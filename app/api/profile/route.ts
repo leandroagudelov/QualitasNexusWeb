@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { parseApiError } from '@/lib/api/profile';
+import { apiConfig } from '@/lib/config/api';
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL || 'http://localhost:5030';
-const DEFAULT_TENANT = process.env.NEXT_PUBLIC_BACKEND_TENANT || 'root';
+const API_BASE = apiConfig.baseUrl;
+const DEFAULT_TENANT = apiConfig.defaultTenant;
 
 /**
  * PUT /api/profile
@@ -24,57 +25,20 @@ export async function PUT(req: NextRequest) {
       payload = await req.json();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Invalid JSON';
+      console.error('[PUT /api/profile] JSON parse error:', message);
       return NextResponse.json(
         { message: 'Invalid request body', details: message },
         { status: 400 }
       );
     }
 
-    // Check if we have an image with data as array
-    if (payload.image && payload.image.data && Array.isArray(payload.image.data)) {
-      // Convert image data array back to Buffer
-      const uint8Array = new Uint8Array(payload.image.data);
-      const blob = new Blob([uint8Array], { type: payload.image.contentType || 'image/png' });
+    console.log('[PUT /api/profile] Payload:', JSON.stringify(payload).substring(0, 200));
+    console.log('[PUT /api/profile] Backend URL:', `${API_BASE}/api/v1/identity/profile`);
+    console.log('[PUT /api/profile] Tenant:', tenant);
 
-      // Create FormData for multipart request
-      const formData = new FormData();
-      
-      // Add text fields
-      if (payload.firstName) formData.append('firstName', payload.firstName);
-      if (payload.lastName) formData.append('lastName', payload.lastName);
-      if (payload.email) formData.append('email', payload.email);
-      if (payload.phoneNumber) formData.append('phoneNumber', payload.phoneNumber);
-      if (payload.deleteCurrentImage !== undefined) {
-        formData.append('deleteCurrentImage', String(payload.deleteCurrentImage));
-      }
-      
-      // Add image as file
-      formData.append('image', blob, payload.image.fileName || 'image.png');
-
-      // Send FormData to backend
-      const response = await fetch(`${API_BASE}/api/v1/identity/profile`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: 'application/json',
-          tenant,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        const errorMessage = parseApiError(response, errorText);
-        return NextResponse.json(
-          { message: 'Failed to update profile', details: errorMessage },
-          { status: response.status }
-        );
-      }
-
-      return NextResponse.json({ ok: true });
-    }
-
-    // Send as JSON to backend (no image)
+    // Send JSON directly to backend
+    // Backend expects: { firstName, lastName, email, phoneNumber, deleteCurrentImage, image? }
+    // where image = { fileName, contentType, data: number[] }
     const response = await fetch(`${API_BASE}/api/v1/identity/profile`, {
       method: 'PUT',
       headers: {
@@ -86,8 +50,11 @@ export async function PUT(req: NextRequest) {
       body: JSON.stringify(payload),
     });
 
+    console.log('[PUT /api/profile] Backend response status:', response.status);
+
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('[PUT /api/profile] Backend error:', errorText.substring(0, 200));
       const errorMessage = parseApiError(response, errorText);
       return NextResponse.json(
         { message: 'Failed to update profile', details: errorMessage },
@@ -98,6 +65,9 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
+    const stack = error instanceof Error ? error.stack : '';
+    console.error('[PUT /api/profile] Catch error:', message);
+    console.error('[PUT /api/profile] Stack:', stack);
     return NextResponse.json(
       { message: 'Backend connection error', details: message },
       { status: 502 }
