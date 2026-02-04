@@ -16,6 +16,14 @@ const AppMenu = () => {
             items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
         },
         {
+            label: 'Administración',
+            items: [
+                { label: 'Usuarios', icon: 'pi pi-fw pi-users', to: '/admin/users' },
+                { label: 'Roles', icon: 'pi pi-fw pi-shield', to: '/admin/roles' },
+                { label: 'Grupos', icon: 'pi pi-fw pi-sitemap', to: '/admin/groups' }
+            ]
+        },
+        {
             label: 'UI Components',
             items: [
                 { label: 'Form Layout', icon: 'pi pi-fw pi-id-card', to: '/uikit/formlayout' },
