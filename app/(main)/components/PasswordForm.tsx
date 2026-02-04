@@ -88,7 +88,7 @@ export function PasswordForm({ onSubmit, isLoading, error }: PasswordFormProps) 
     <form ref={formRef} onSubmit={handleSubmit} className="p-fluid grid gap-0">
       {/* Current Password */}
       <div className="col-12">
-        <div className="field mb-2">
+        <div className="field mb-1">
           <label htmlFor="currentPassword" className="text-xs font-semibold block mb-1">
             Contraseña actual *
           </label>
@@ -102,7 +102,7 @@ export function PasswordForm({ onSubmit, isLoading, error }: PasswordFormProps) 
             className={classNames('w-full text-xs', {
               'p-invalid': touched.currentPassword && !!errors.password,
             })}
-            style={{ padding: '0.5rem' }}
+            style={{ padding: '0.75rem' }}
             disabled={isLoading}
           />
           {touched.currentPassword && errors.password && (
@@ -113,7 +113,7 @@ export function PasswordForm({ onSubmit, isLoading, error }: PasswordFormProps) 
 
       {/* New Password */}
       <div className="col-12">
-        <div className="field mb-2">
+        <div className="field mb-1">
           <label htmlFor="newPassword" className="text-xs font-semibold block mb-1">
             Nueva contraseña *
           </label>
@@ -127,7 +127,7 @@ export function PasswordForm({ onSubmit, isLoading, error }: PasswordFormProps) 
             className={classNames('w-full text-xs', {
               'p-invalid': touched.newPassword && !!errors.newPassword,
             })}
-            style={{ padding: '0.5rem' }}
+            style={{ padding: '0.75rem' }}
             disabled={isLoading}
           />
           {touched.newPassword && errors.newPassword && (
@@ -138,7 +138,7 @@ export function PasswordForm({ onSubmit, isLoading, error }: PasswordFormProps) 
 
       {/* Confirm Password */}
       <div className="col-12">
-        <div className="field mb-2">
+        <div className="field mb-1">
           <label htmlFor="confirmNewPassword" className="text-xs font-semibold block mb-1">
             Confirmar contraseña *
           </label>
@@ -152,7 +152,7 @@ export function PasswordForm({ onSubmit, isLoading, error }: PasswordFormProps) 
             className={classNames('w-full text-xs', {
               'p-invalid': touched.confirmNewPassword && !!errors.confirmNewPassword,
             })}
-            style={{ padding: '0.5rem' }}
+            style={{ padding: '0.75rem' }}
             disabled={isLoading}
           />
           {touched.confirmNewPassword && errors.confirmNewPassword && (

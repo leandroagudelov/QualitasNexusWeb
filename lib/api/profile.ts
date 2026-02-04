@@ -33,7 +33,15 @@ export async function fetchCurrentProfile(): Promise<UserDto> {
       throw new Error(parseApiError(response, text));
     }
 
-    return await response.json();
+    const user = await response.json();
+    
+    // Add cache-busting parameter to image URL to force fresh image load
+    if (user.imageUrl) {
+      const separator = user.imageUrl.includes('?') ? '&' : '?';
+      user.imageUrl = `${user.imageUrl}${separator}t=${Date.now()}`;
+    }
+
+    return user;
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(`No se pudo cargar el perfil: ${error.message}`);
@@ -47,6 +55,7 @@ export async function fetchCurrentProfile(): Promise<UserDto> {
  */
 export async function updateProfile(data: UpdateProfileRequest): Promise<void> {
   try {
+    // Always send as JSON - the server will handle it
     const response = await fetch(apiEndpoints.updateProfile, {
       method: 'PUT',
       headers: {

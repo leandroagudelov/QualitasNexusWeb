@@ -1,10 +1,8 @@
-import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
-
 /**
  * Logout user and redirect to login page
  * Handles cookie cleanup and navigation
  */
-export async function logoutAndRedirect(router: AppRouterInstance): Promise<void> {
+export async function logoutAndRedirect(router: { push: (path: string) => void }): Promise<void> {
   try {
     await fetch('/api/auth/logout', { method: 'POST' });
   } catch {

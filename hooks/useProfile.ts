@@ -52,6 +52,8 @@ export function useProfile() {
     setProfile(prev => ({ ...prev, saving: true, error: null }));
     try {
       await updateProfile(data);
+      // Small delay to ensure server has processed the update
+      await new Promise(resolve => setTimeout(resolve, 500));
       // Refresh profile to get updated data
       await loadProfile();
       setProfile(prev => ({ ...prev, saving: false }));

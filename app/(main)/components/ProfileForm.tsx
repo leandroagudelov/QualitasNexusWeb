@@ -56,7 +56,7 @@ export function ProfileForm({
     <div className="p-fluid grid gap-0">
       {/* First Name */}
       <div className="col-12 sm:col-6">
-        <div className="field mb-2">
+        <div className="field mb-1">
           <label htmlFor="firstName" className="text-xs font-semibold block mb-1">
             Nombre *
           </label>
@@ -67,7 +67,7 @@ export function ProfileForm({
             onBlur={() => handleBlur('firstName')}
             placeholder="Tu nombre"
             className={classNames('w-full text-xs', { 'p-invalid': !!errors.firstName })}
-            style={{ padding: '0.5rem' }}
+            style={{ padding: '0.75rem' }}
           />
           {errors.firstName && <small className="p-error text-xs">{errors.firstName}</small>}
         </div>
@@ -75,7 +75,7 @@ export function ProfileForm({
 
       {/* Last Name */}
       <div className="col-12 sm:col-6">
-        <div className="field mb-2">
+        <div className="field mb-1">
           <label htmlFor="lastName" className="text-xs font-semibold block mb-1">
             Apellido *
           </label>
@@ -86,7 +86,7 @@ export function ProfileForm({
             onBlur={() => handleBlur('lastName')}
             placeholder="Tu apellido"
             className={classNames('w-full text-xs', { 'p-invalid': !!errors.lastName })}
-            style={{ padding: '0.5rem' }}
+            style={{ padding: '0.75rem' }}
           />
           {errors.lastName && <small className="p-error text-xs">{errors.lastName}</small>}
         </div>
@@ -94,7 +94,7 @@ export function ProfileForm({
 
       {/* Email (Read-only) */}
       <div className="col-12">
-        <div className="field mb-2">
+        <div className="field mb-1">
           <label htmlFor="email" className="text-xs font-semibold block mb-1">
             Email <span className="text-xs text-color-secondary">(protegido)</span>
           </label>
@@ -105,7 +105,7 @@ export function ProfileForm({
             disabled
             placeholder="Tu email"
             className="w-full text-xs"
-            style={{ padding: '0.5rem' }}
+            style={{ padding: '0.75rem' }}
           />
           <small className="text-color-secondary text-xs">
             El email no se puede cambiar por seguridad. Contacta con soporte si necesitas actualizarlo.
@@ -115,7 +115,7 @@ export function ProfileForm({
 
       {/* Phone Number */}
       <div className="col-12">
-        <div className="field mb-2">
+        <div className="field mb-1">
           <label htmlFor="phone" className="text-xs font-semibold block mb-1">
             Teléfono
           </label>
@@ -127,7 +127,7 @@ export function ProfileForm({
             mask="999 999 9999"
             placeholder="000 000 0000"
             className={classNames('w-full text-xs', { 'p-invalid': !!errors.phoneNumber })}
-            style={{ padding: '0.5rem' }}
+            style={{ padding: '0.75rem' }}
           />
           {errors.phoneNumber && <small className="p-error text-xs">{errors.phoneNumber}</small>}
         </div>

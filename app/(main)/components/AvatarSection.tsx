@@ -14,7 +14,7 @@ interface AvatarSectionProps {
   deleteCurrentImage: boolean;
   onImageSelect: (file: File | null) => void;
   onDeleteToggle: (shouldDelete: boolean) => void;
-  error?: string;
+  error?: string | null;
   onErrorClear: () => void;
 }
 
@@ -37,13 +37,11 @@ export function AvatarSection({
     if (imageFile) {
       const previewUrl = createImagePreview(imageFile);
       setPreview(previewUrl);
+      
+      return () => {
+        revokeImagePreview(previewUrl);
+      };
     }
-
-    return () => {
-      if (preview) {
-        revokeImagePreview(preview);
-      }
-    };
   }, [imageFile]);
 
   const handleFileSelect = useCallback((e: FileUploadSelectEvent) => {

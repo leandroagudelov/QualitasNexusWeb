@@ -129,15 +129,15 @@ export default function ProfilePage() {
               <Skeleton width="30%" height="0.8rem" />
             </div>
             <Divider className="my-1" />
-            <div className="col-12 lg:col-6">
+            <div className="col-12 lg:col-12">
               <Skeleton width="100%" height="1.8rem" className="mb-1" />
               <Skeleton width="100%" height="1.8rem" className="mb-1" />
-              <Skeleton width="100%" height="1.8rem" />
+             
             </div>
-            <div className="col-12 lg:col-6">
+            <div className="col-12 lg:col-12">
               <Skeleton width="100%" height="1.8rem" className="mb-1" />
               <Skeleton width="100%" height="1.8rem" className="mb-1" />
-              <Skeleton width="100%" height="1.8rem" />
+             
             </div>
           </div>
         </Card>
@@ -202,10 +202,10 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Main Content: Two Columns */}
-        <div className="grid gap-1" style={{ columnGap: '1.5rem' }}>
-          {/* Left Column: Profile Info + Avatar */}
-          <div className="col-12 md:col-6">
+        {/* Main Content: Info full width, then Avatar and Password side by side */}
+        <div className="grid gap-3">
+          {/* Full Width: Profile Info */}
+          <div className="col-12">
             <h4 className="text-sm font-semibold mb-2 mt-0">Información Personal</h4>
             <ProfileForm
               user={user}
@@ -218,9 +218,13 @@ export default function ProfilePage() {
               onEmailChange={setEmail}
               onPhoneNumberChange={setPhoneNumber}
             />
+          </div>
+        </div>
 
-            <Divider className="my-2" />
-            <h4 className="text-sm font-semibold mb-2 mt-2">Foto de Perfil</h4>
+        {/* Avatar and Password - Side by Side */}
+        <div className="flex gap-2 mt-3" style={{ flexWrap: 'wrap' }}>
+          <div style={{ flex: '1 1 calc(50% - 4px)', minWidth: '250px' }}>
+            <h4 className="text-sm font-semibold mb-2 mt-0">Foto de Perfil</h4>
             <AvatarSection
               imageUrl={user?.imageUrl}
               imageFile={imageFile}
@@ -232,8 +236,7 @@ export default function ProfilePage() {
             />
           </div>
 
-          {/* Right Column: Password */}
-          <div className="col-12 md:col-6">
+          <div style={{ flex: '1 1 calc(50% - 4px)', minWidth: '250px' }}>
             <h4 className="text-sm font-semibold mb-2 mt-0">Cambiar Contraseña</h4>
             <PasswordForm
               onSubmit={handleChangePassword}
